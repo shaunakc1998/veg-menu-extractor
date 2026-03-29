@@ -14,6 +14,7 @@ executing the workflow.
 7. Server script templates
 8. Counting, scoring, and categorization
 9. Handling common failure modes
+10. Hours and practical logistics
 
 ---
 
@@ -119,6 +120,13 @@ options. Don't drop them just because they're less "famous."
 Try in order. Stop once you have 8+ dish names. Budget 2–4 calls per
 restaurant.
 
+**Important — cuisine-aware source selection:** Many Asian restaurants
+(Chinese, Korean, Japanese, Thai, Vietnamese) use image-based menus, PDFs,
+or JavaScript-heavy sites that web_fetch can't read. For these cuisines,
+**skip straight to delivery platforms** (Source 3) if the restaurant
+website doesn't yield text content on the first try. Don't waste 3 attempts
+on an image menu — DoorDash/UberEats almost always have the full text menu.
+
 ### Source 1: Restaurant's own website
 
 Search: `[restaurant name] [city] menu`
@@ -129,17 +137,28 @@ URL patterns to try: `/menu`, `/food`, `/dinner-menu`, `/food-menu`,
 Check for multiple menus (dinner, lunch, brunch, bar). Check for a
 separate vegetarian/vegan menu page.
 
+If web_fetch returns mostly images, navigation, or boilerplate → go to
+Source 3 (delivery platforms) immediately, not Source 2.
+
 ### Source 2: Yelp
 
 Search: `[restaurant name] [city] site:yelp.com`
 
 URLs: `yelp.com/menu/[slug]` or `yelp.com/biz/[slug]`
 
-### Source 3: Delivery platforms
+Good for restaurants with text-based menus. Less useful for Asian
+restaurants since Yelp menu coverage is inconsistent for these.
+
+### Source 3: Delivery platforms (go-to for image menus)
 
 Search: `[restaurant name] [city] doordash` (or ubereats, grubhub)
 
-Often the most complete and current menus.
+Often the most complete and current menus — and critically, they always
+have **text-based** item listings even when the restaurant's own site uses
+images or PDFs. For AYCE restaurants (hotpot, BBQ, buffet), delivery
+platforms may not list the full in-restaurant menu since AYCE doesn't
+translate to delivery. In that case, combine delivery menu data with
+review-sourced info.
 
 ### Source 4: Google search snippets / aggregators
 
@@ -150,17 +169,19 @@ Search: `[restaurant name] [city] full menu items`
 Search: `[restaurant name] menu items what to order`
 
 Use for hero dish identification and supplementary data. Always label
-review-sourced info as such.
+review-sourced info as such. Especially useful for AYCE restaurants
+where reviewers often list exactly what's on the belt or buffet.
 
 ### Common technical failures
 
 | Situation | What to do |
 |---|---|
-| JavaScript-rendered menu | Try Yelp or delivery platform |
-| PDF menu | Note "Menu is PDF — check link"; try Yelp |
-| Image-only menu | Note "Menu is image — check link"; try Yelp |
+| JavaScript-rendered menu | Try delivery platforms first, then Yelp |
+| PDF menu | Note "Menu is PDF — check link"; try delivery platforms |
+| Image-only menu | Go straight to DoorDash/UberEats; skip Yelp |
 | 403 Forbidden | Try alternate source |
 | Menu behind reservation wall | Note the restriction |
+| AYCE menu not on delivery apps | Use reviews + restaurant website together |
 
 ---
 
@@ -290,6 +311,45 @@ Apply these adjustments on top of the base classification rules:
 - Remove eggs
 - This is the most restrictive profile — note that options will be
   limited and the user should call ahead
+
+### Allergen stacking
+
+When the user has allergies on top of their dietary profile, apply both
+filters. Present items that pass both filters, and flag items that are
+vegetarian but contain the allergen.
+
+**Vegetarian + Gluten-free:**
+- Remove: pasta (unless GF), bread, soy sauce (use tamari), seitan,
+  beer batter, flour-based sauces, regular noodles
+- Flag: "⚠️ Contains gluten" on items with flour, wheat, barley, rye
+- Watch: many Asian sauces contain wheat-based soy sauce
+- Hotpot-specific: most broths are GF but verify; rice noodles and
+  rice cake are safe; udon and ramen are not
+- Server script: "I'm vegetarian and gluten-free — could you check if
+  the [dish] contains any wheat, soy sauce, or flour?"
+
+**Vegetarian + Nut-free:**
+- Remove: pesto (pine nuts), Thai curries with peanuts, dishes with
+  cashew cream, many Indian gravies (often use cashew or almond paste)
+- Flag: "⚠️ Contains nuts" on items with any tree nuts or peanuts
+- Watch: desserts (often have hidden nuts), pad thai (peanuts),
+  Middle Eastern food (pistachios, walnuts)
+- Server script: "I have a nut allergy — are there any peanuts, tree
+  nuts, or nut-based pastes in the [dish]?"
+
+**Vegetarian + Soy-free:**
+- Remove: tofu, tempeh, edamame, miso soup, soy sauce, teriyaki
+- This eliminates most Asian veg options — note the limitation clearly
+- Server script: "I can't have soy — does the [dish] contain tofu,
+  soy sauce, or any soy products?"
+
+**General allergen handling:**
+- Note in the dining tip if a restaurant has a published allergen menu
+  or is known for accommodating allergies
+- If a restaurant uses QR-code ordering (common in hotpot/AYCE), note
+  that allergen filters are sometimes available in the ordering system
+- When allergen + dietary combo leaves very few options, say so honestly
+  and suggest calling ahead
 
 ---
 
@@ -479,10 +539,9 @@ many "verify" items suggesting low veg awareness.
 
 | Problem | What to do |
 |---|---|
-| web_fetch returns JS-only page | Try Yelp or delivery platform |
+| web_fetch returns JS-only page | Try delivery platforms first, then Yelp |
 | web_fetch returns 403 | Try different source; note block |
-| Menu is PDF | Note it; try Yelp |
-| Menu is image | Note it; try Yelp |
+| Menu is PDF or image | Try DoorDash/UberEats immediately; they always have text |
 | No online menu anywhere | Include with "Menu not available online" |
 | 100+ item menu | Classify them all — that's the skill's value |
 | 0 veg items | Include with verdict 🔴 and note |
@@ -492,4 +551,40 @@ many "verify" items suggesting low veg awareness.
 | Prices not shown | Omit price; note "prices not listed" |
 | Menu in another language | Do your best; note language |
 | Veg items found only in reviews | Include with "Sourced from reviews" note |
-| User changes dietary profile mid-conversation | Re-filter existing data through new profile |
+| User changes dietary profile | Re-filter existing data through new profile |
+| AYCE menu not on delivery apps | Combine reviews + restaurant site for item list |
+| User has allergen + dietary combo | Apply both filters; flag items that pass one but not other |
+| Broad location (e.g., "Bay Area") | Ask for neighborhood or pick 2–3 popular dining areas |
+
+---
+
+## 10. Hours and practical logistics
+
+Restaurant hours matter — don't recommend a place that's closed when the
+user wants to eat.
+
+### What to include
+
+When crawling a restaurant, look for hours in:
+- The restaurant's website (usually in header/footer)
+- Google search snippets (often show hours directly)
+- Yelp business info
+
+Include hours in the output template: `🕐 Hours: [e.g., Tue–Sun 5–10pm,
+closed Mon]`
+
+### What to flag
+
+- **Closed on the user's day:** If the user says "dinner tomorrow" and
+  tomorrow is Monday, flag restaurants closed on Mondays
+- **Limited hours:** "Dinner only Wed–Sat" or "Lunch only" — note this
+- **Seasonal closures:** Some restaurants close for weeks; note if mentioned
+- **Wait times:** If reviews consistently mention long waits, note it in
+  the dining tip: "Expect 45–60 min wait without reservation"
+- **Reservation required vs walk-in:** Note which approach works
+
+### When hours aren't available
+
+If you can't find hours, note "🕐 Hours not confirmed — check before going"
+rather than omitting the field. Users seeing no hours field won't think
+to check; seeing the note reminds them.

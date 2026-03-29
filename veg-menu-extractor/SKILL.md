@@ -48,6 +48,7 @@ Collect from the user (ask only for what they haven't provided):
 |--------------------|----------|--------------------|
 | Location           | Yes      | —                  |
 | Dietary profile    | No       | "vegetarian"       |
+| Allergens          | No       | none               |
 | Cuisine preference | No       | any                |
 | Price range        | No       | any                |
 | Min rating         | No       | 4.0 stars          |
@@ -57,6 +58,37 @@ Collect from the user (ask only for what they haven't provided):
 
 If the user gives a simple prompt like "veg options in downtown Austin," use
 sensible defaults and go — don't interrogate them.
+
+#### Broad locations
+
+If the user gives a very broad location like "Bay Area," "Los Angeles," or
+"London," ask which neighborhood or area they'll be in. A 50-mile radius
+produces scattered results that aren't useful for "where should we eat
+tonight." If they don't narrow it, pick 2–3 popular dining neighborhoods
+and search those specifically. For example:
+- "Bay Area" → "San Francisco Mission District," "Oakland Temescal,"
+  "Palo Alto downtown"
+- "Los Angeles" → "Silver Lake," "Santa Monica," "West Hollywood"
+
+#### Allergen stacking
+
+Real people often have multiple dietary needs: "vegetarian + gluten-free"
+or "vegan + nut allergy." When the user mentions an allergen:
+
+- Apply it as an additional filter on top of the dietary profile
+- Flag items that are vegetarian but contain the allergen: "⚠️ Contains
+  gluten" or "⚠️ Contains tree nuts"
+- In server scripts, combine both needs: "I'm vegetarian and gluten-free —
+  can you tell me which dishes work for both?"
+- Note in the dining tip if a restaurant has an allergen menu or is known
+  for accommodating allergies
+
+Common allergen combos to watch for:
+- **Veg + gluten-free:** Watch pasta, bread, soy sauce, seitan, beer batter
+- **Veg + nut-free:** Watch pesto (pine nuts), Thai curries (peanuts),
+  Indian dishes (cashew cream), desserts
+- **Veg + dairy-free:** Essentially vegan — switch to vegan profile
+- **Veg + soy-free:** Eliminates tofu, tempeh, soy sauce, miso, edamame
 
 #### Dietary profiles
 
@@ -78,12 +110,14 @@ the user's profile and tailor classification accordingly:
 - "I eat fish" → pescatarian
 - "Fish sauce is fine" / "I'm not strict" → flexitarian
 - "No eggs" → egg-free vegetarian
+- "gluten-free" / "nut allergy" / "celiac" → add allergen filter
 - No specification → default to lacto-ovo vegetarian
 
 Adjust classification in Step 4 based on the profile. For example:
 - A flexitarian doesn't need "verify fish sauce" flags
 - A vegan needs dairy/egg items filtered out, not just meat
 - A pescatarian can eat the swordfish — include it
+- A "vegetarian + gluten-free" user needs both filters applied
 
 ### Step 2 — Discover top-rated restaurants
 
@@ -208,9 +242,11 @@ see the landscape before diving into details:
 💡 Top pick for mixed groups: [Name] — [one-sentence reason]
 ```
 
-**Then, for each restaurant in order, show the full breakdown:**
+**Then, for each restaurant in order, show the full breakdown.**
 
-For **à la carte restaurants:**
+Choose the right template based on the restaurant format:
+
+#### Template A — À la carte restaurants
 
 ```
 ---
@@ -218,6 +254,7 @@ For **à la carte restaurants:**
 ### 1. [Restaurant Name] — 🟢 Great for veg
 [Cuisine] | [Rating] ⭐ | [Price $/$$/$$$] | [Address]
 🔗 [Menu link] | 📅 [Dinner / Brunch / Lunch]
+🕐 Hours: [e.g., Tue–Sun 5–10pm, closed Mon]
 
 **⭐ Hero dish:** [Dish name] ($XX) — [why it's special]
 
@@ -239,13 +276,16 @@ For **à la carte restaurants:**
 - "[Dish] — is the Caesar dressing made with anchovies? I don't eat fish."
 - "[Dish] — is the risotto made with vegetable stock or chicken stock?"
 
+🍖 **For your non-veg friends:** [1–2 standout meat/fish dishes from reviews,
+e.g., "The ribeye and seafood tower get rave reviews — your group will love it."]
+
 📊 Veg count: X / Y total items
 
-💡 **Dining tip:** [practical advice, e.g. "Reserve 2+ weeks out. Sit at the
-bar for walk-ins. Ask about the off-menu veg pasta — reviews mention it."]
+💡 **Dining tip:** [practical advice: reservation guidance, walk-in strategy,
+wait times, which night to go, anything useful for planning]
 ```
 
-For **prix fixe / tasting menus:**
+#### Template B — Prix fixe / tasting menus
 
 ```
 ---
@@ -253,6 +293,7 @@ For **prix fixe / tasting menus:**
 ### 1. [Restaurant Name] — 🟡 Workable
 [Cuisine] | [Rating] ⭐ | [Price $XXX/person] | [Address]
 🔗 [Menu link] | Format: [X]-course prix fixe
+🕐 Hours: [hours]
 
 **Vegetarian options by course:**
 
@@ -265,6 +306,8 @@ For **prix fixe / tasting menus:**
 
 **Dessert:** All 3 options are vegetarian ✅
 
+🍖 **For your non-veg friends:** [highlight the best meat/fish courses]
+
 📊 Vegetarian choices in X of Y courses
 
 💡 **Dining tip:** Call ahead and say: "I'm vegetarian — do you offer a
@@ -273,7 +316,62 @@ Most serious kitchens will prepare a full vegetarian progression with
 advance notice. Book at least [X] days ahead.
 ```
 
-**Close with a final recommendation:**
+#### Template C — AYCE / build-your-own (hotpot, poke, BBQ, dim sum, buffet)
+
+These restaurants don't have "dishes" — they have components you assemble.
+Don't force them into Starters/Mains/Sides/Desserts. Use the restaurant's
+own structure:
+
+```
+---
+
+### 1. [Restaurant Name] — 🟢 Veg paradise
+[Cuisine type, e.g., "Korean Hotpot"] | [Rating] ⭐ | [Price/format, e.g., "AYCE $37/person"] | [Address]
+🔗 [Menu link]
+🕐 Hours: [hours]
+Format: [AYCE / build-your-own / conveyor belt / etc.]
+
+**⭐ Hero pick:** [best veg component/combo, e.g., "The mushroom soup base +
+tofu skin + udon combo is a full meal"]
+
+**🥣 Soup bases / broths (vegetarian):**
+- [Base] ✅ — [brief note]
+- [Base] ✅ [Vegan]
+- ❌ Skip: [non-veg bases]
+
+**🥬 Vegetables:**
+- [list all available veg items]
+
+**🫘 Tofu & soy products:**
+- [list: tofu, bean curd, tofu skin, etc.]
+- ⚠️ "Fish tofu" — contains fish despite the name
+
+**🍄 Mushrooms:**
+- [list all mushroom options]
+
+**🍜 Noodles & starches:**
+- [list: udon, vermicelli, rice cake, etc.]
+
+**🫙 Sauces (veg-safe):**
+- [list safe sauces from sauce bar]
+
+**❌ Skip entirely:** [proteins, seafood sections]
+
+❓ **Ask your server:**
+- "Is the [broth name] made with any animal stock or shrimp paste?"
+- "Which sauces at the sauce bar contain fish sauce or oyster sauce?"
+
+🍖 **For your non-veg friends:** [e.g., "The wagyu beef and seafood platter
+get top reviews — they'll eat well here too."]
+
+📊 Veg component count: X veg items available out of Y total
+
+💡 **Dining tip:** [e.g., "Individual pots available for parties of 4 or
+fewer — no cross-contamination. Sit near the belt exit for freshest picks.
+AYCE has a 90-min time limit. Lunch is $23, dinner is $37."]
+```
+
+**Close every response with a final recommendation:**
 
 ```
 ---
@@ -281,8 +379,9 @@ advance notice. Book at least [X] days ahead.
 ## Bottom line
 
 **For your mixed group, I'd go with [Restaurant Name].**
-[2–3 sentences: why it's the best balance of great food for everyone,
-strong veg options, and practical logistics (reservations, location, etc.)]
+[2–3 sentences: why it's the best balance of great food for everyone —
+both the veg person and the non-veg people. Mention strong veg options,
+great non-veg dishes, and practical logistics.]
 
 **Runner-up:** [Name] — [one sentence why]
 
