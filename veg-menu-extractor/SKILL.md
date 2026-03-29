@@ -40,24 +40,72 @@ and server script templates. That file is the authoritative reference.
 
 ## Workflow
 
-### Step 1 — Gather inputs and dietary profile
+### Step 1 — Gather inputs and filters
 
-Collect from the user (ask only for what they haven't provided):
+**First, check what the user already provided.** If their prompt includes
+specific details (cuisine, price, dietary needs), extract those and skip
+asking about them. For example, "I'm vegan, find upscale Italian near
+West Village" already gives you dietary profile, cuisine, price, and
+location — go straight to Step 2.
 
-| Input              | Required | Default            |
-|--------------------|----------|--------------------|
-| Location           | Yes      | —                  |
-| Dietary profile    | No       | "vegetarian"       |
-| Allergens          | No       | none               |
-| Cuisine preference | No       | any                |
-| Price range        | No       | any                |
-| Min rating         | No       | 4.0 stars          |
-| Meal period        | No       | dinner             |
-| Number of results  | No       | 5–8                |
-| Other filters      | No       | none               |
+**If the prompt is simple** (e.g., "veg options near me" or "restaurants
+in Austin"), offer the filter prompt:
 
-If the user gives a simple prompt like "veg options in downtown Austin," use
-sensible defaults and go — don't interrogate them.
+Use the `ask_user_input` tool with a brief message like: "I'll find
+restaurants with great vegetarian options. Want to set some filters first,
+or should I just go with sensible defaults?"
+
+Options: **"Set filters"** / **"Just go"**
+
+If they pick **"Just go"** → use defaults below and proceed to Step 2.
+
+If they pick **"Set filters"** → show the filter panel using
+`ask_user_input` with up to 3 questions:
+
+**Question 1 (multi-select):**
+"What kind of food are you in the mood for?"
+Options: Any cuisine, Italian, Japanese, Indian, Thai, Chinese, Mexican,
+Mediterranean, Korean, American
+
+**Question 2 (single-select):**
+"Budget?"
+Options: Any price, $ Budget, $$ Mid-range, $$$ Upscale, $$$$ Fine dining
+
+**Question 3 (single-select):**
+"Dietary profile?"
+Options: Vegetarian, Vegan, Pescatarian, Flexitarian (not strict)
+
+Then after they respond, show a second round if relevant:
+
+**Question 4 (single-select):**
+"Meal?"
+Options: Dinner, Lunch, Brunch, Late night
+
+**Question 5 (single-select):**
+"How far are you willing to go?"
+Options: Walking distance, 15 min drive, 30 min drive, Anywhere in the area
+
+**Question 6 (single-select):**
+"Group size?"
+Options: Just me, 2 people, Small group (3–5), Large group (6+)
+
+Don't always show all 6 — use judgment. If the user already mentioned
+"dinner for 4" in their prompt, skip the meal and group size questions.
+The goal is to fill in gaps, not repeat what they've already told you.
+
+#### Defaults (when not specified)
+
+| Filter           | Default            |
+|------------------|--------------------|
+| Cuisine          | any                |
+| Price range      | any                |
+| Dietary profile  | vegetarian (lacto-ovo) |
+| Allergens        | none               |
+| Meal period      | dinner             |
+| Radius           | 15 min drive       |
+| Group size       | 2–4 people         |
+| Min rating       | 4.0 stars          |
+| Number of results| 5–8                |
 
 #### Broad locations
 
@@ -121,12 +169,25 @@ Adjust classification in Step 4 based on the profile. For example:
 
 ### Step 2 — Discover top-rated restaurants
 
+**Apply the user's filters to shape your searches:**
+- **Cuisine filter** → if set, focus searches on that cuisine. If "Any,"
+  search across all types.
+- **Price filter** → add price-targeted queries (e.g., "best fine dining")
+- **Radius filter** → controls how far to expand:
+  - "Walking distance" → stay within the stated neighborhood only
+  - "15 min drive" → include adjacent neighborhoods/cities
+  - "30 min drive" → search the broader metro area
+  - "Anywhere in the area" → widest possible search
+- **Group size** → note this for dining tips later (large groups need
+  restaurants that take reservations and have big tables)
+
 Run **3–5 varied `web_search` queries** to get diverse results. See
 `references/search-and-classify.md` for the full query template list.
 
-**Search for ALL cuisine types** — Italian, steakhouse, Thai, Mexican, Indian,
-Japanese, American, Mediterranean, fusion, everything. Don't bias toward
-"vegetarian-friendly" places. A steakhouse with great sides is fair game.
+**Search for ALL cuisine types** (unless filtered) — Italian, steakhouse,
+Thai, Mexican, Indian, Japanese, American, Mediterranean, fusion,
+everything. Don't bias toward "vegetarian-friendly" places. A steakhouse
+with great sides is fair game.
 
 **Then run a mandatory "veg-specialist sweep"** — this is NOT optional. Run
 at least 2 searches specifically designed to surface restaurants that are
@@ -138,10 +199,15 @@ user but are invisible to general "best restaurants" searches.
 - `[cuisine] [location] vegetarian options`
 - `best vegan [cuisine] [location]`
 
-**Step 2b — Expanded radius search (REQUIRED):**
+**Step 2b — Expanded radius search (respect the user's radius filter):**
 Veg-specialist restaurants are rarer than mainstream ones. The best option
-for a vegetarian is often in an adjacent neighborhood or city — 10–15
-minutes away. Always run at least 1 search with a broader location:
+for a vegetarian is often in an adjacent neighborhood or city. Expand the
+search area based on the user's radius setting:
+- **Walking distance** → don't expand; stick to the stated area
+- **15 min drive** (default) → search adjacent cities/neighborhoods
+- **30 min drive / Anywhere** → search the full metro area
+
+If the user didn't set a radius, default to 15-min-drive expansion:
 - If user says a city → search the metro area: "San Jose" → also search
   "South Bay," "Sunnyvale," "Santa Clara," "Milpitas"
 - If user says a neighborhood → search the city: "West Village" → also
@@ -254,15 +320,19 @@ see the landscape before diving into details:
 
 ```
 ## Quick scan — [Location] veg-friendly dining
+🔎 Filters: [Cuisine] | [Price] | [Dietary profile] | [Meal] | [Radius]
 
 | # | Restaurant | Cuisine | Verdict | Veg items | Hero dish |
 |---|-----------|---------|---------|-----------|-----------|
 | 1 | [Name]    | Italian | 🟢 Great | 8 items  | ⭐ Mushroom ragu |
 | 2 | [Name]    | Thai    | 🟡 Workable | 4 items | ⭐ Green curry (verify fish sauce) |
-| 3 | [Name]    | American | 🟠 Slim | 2 items  | — |
+| 3 | [Name] ⚠️ 15min away | Sushi | 🟢 Veg paradise | 12 items | ⭐ Vegan roll set |
 
 💡 Top pick for mixed groups: [Name] — [one-sentence reason]
 ```
+
+Only show the Filters line when the user set filters (skip if they chose
+"Just go"). Mark out-of-area restaurants with "⚠️ Xmin away" in the table.
 
 **Then, for each restaurant in order, show the full breakdown.**
 
@@ -304,7 +374,8 @@ e.g., "The ribeye and seafood tower get rave reviews — your group will love it
 📊 Veg count: X / Y total items
 
 💡 **Dining tip:** [practical advice: reservation guidance, walk-in strategy,
-wait times, which night to go, anything useful for planning]
+wait times, which night to go, parking. For large groups (6+): does the
+restaurant take group reservations? Private rooms? Minimum spend?]
 ```
 
 #### Template B — Prix fixe / tasting menus
