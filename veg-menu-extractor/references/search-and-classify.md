@@ -51,6 +51,61 @@ best fine dining [location]
 best mid-range restaurants [location]
 ```
 
+### Veg-signal searches (always run 1–2 of these)
+
+These catch restaurants that are intentionally veg-friendly but don't top
+the general "best of" lists. This is one of the most important search
+steps — skipping it is how you miss hidden gems like a dedicated hotpot
+spot with a vegetarian combo or a Thai restaurant that cooks without fish
+sauce.
+
+```
+vegetarian friendly [cuisine] [location]
+[cuisine] [location] vegetarian options
+[cuisine] [location] vegan friendly
+best vegetarian [cuisine] [location]
+[cuisine] [location] plant based
+```
+
+For general (non-cuisine-specific) searches:
+```
+vegetarian friendly restaurants [location]
+best restaurants vegetarian options [location]
+vegan friendly dining [location]
+```
+
+### Cuisine-aware subtype searches
+
+Some cuisines have subtypes that are structurally more veg-friendly. When
+the user asks for a specific cuisine, search for the veg-favorable subtype
+too — don't just search for the umbrella term.
+
+| Cuisine | Veg-favorable subtype | Why | Search to add |
+|---|---|---|---|
+| Hotpot / Korean | Dedicated hotpot (not BBQ+hotpot) | Individual pots, menus built around broth/veg/tofu, no meat cross-contamination | `hotpot [location]` (not just "korean bbq hotpot") |
+| Indian | South Indian, "pure veg" | More inherently vegetarian dishes | `south indian [location]`, `pure veg [location]` |
+| Japanese | Izakaya, Buddhist/shojin | More cooked veg options, veg tasting menus | `izakaya [location]`, `japanese vegetarian [location]` |
+| Italian | Pasta-focused, Roman | Cacio e pepe, carciofi, more veg-first dishes | `pasta restaurant [location]` |
+| Mexican | Regional Mexican, Oaxacan | Bean/cheese/mole traditions, less meat-centric | `mexican vegetarian [location]` |
+| Thai | Thai with veg options | Some cook without fish sauce on request | `thai vegetarian [location]` |
+| Chinese | Buddhist vegetarian, Sichuan | Tofu/mushroom traditions, mapo tofu | `chinese vegetarian [location]` |
+
+### Ranking candidates
+
+When trimming from 8–12 candidates down to the requested count:
+
+**Prioritize rating quality over review volume.** A 4.8⭐ restaurant with
+500 reviews is a much stronger signal than a 4.2⭐ with 2,000 reviews.
+High-rated restaurants with moderate review counts are often newer, more
+intentional places — exactly the type that tend to have thoughtful veg
+options. Don't drop them just because they're less "famous."
+
+**Ranking heuristic (apply after menu analysis):**
+1. Veg-friendliness score (from Step 4) — the primary sort
+2. Star rating — tiebreaker between equal veg scores
+3. Review count — only use to break ties between equal ratings
+4. Cuisine diversity — prefer a mix over 5 restaurants of the same type
+
 ### When results are thin
 
 - Broaden from neighborhood to city
@@ -400,6 +455,20 @@ can make."
 
 **Score bumps (+1):** Dedicated veg menu section, (V)/(VG) labels, reviews
 praising veg options, substantial veg mains.
+
+**Automatic 5/5 signals (any one of these = veg paradise):**
+- Restaurant offers a dedicated vegetarian combo/set meal
+- Menu has labeled vegan/vegetarian soup bases, broths, or sauces
+- Restaurant has a full separate vegetarian menu
+- Significant portion (30%+) of the menu is natively vegetarian
+- Individual cooking vessels (hotpot, fondue) eliminating cross-contamination
+
+These signals indicate the kitchen *thought about* vegetarians as a real
+customer, not an afterthought. This is the difference between "we have
+salad" and "we built a vegetarian experience." Restaurants with these
+signals should always be ranked above those with more total veg items but
+no intentional design — a place with 8 items and a dedicated veg combo
+beats a place with 15 items that are all "sides you can technically eat."
 
 **Score drops (-1):** Only sides/salads, heavy "can be made veg" reliance,
 many "verify" items suggesting low veg awareness.

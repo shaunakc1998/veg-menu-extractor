@@ -94,6 +94,40 @@ Run **3–5 varied `web_search` queries** to get diverse results. See
 Japanese, American, Mediterranean, fusion, everything. Don't bias toward
 "vegetarian-friendly" places. A steakhouse with great sides is fair game.
 
+**Then run 1–2 "veg-signal" searches** to catch restaurants that are
+intentionally veg-friendly but don't dominate the "best of" lists:
+- `vegetarian friendly [cuisine] [location]`
+- `[cuisine] [location] vegetarian options`
+- `[cuisine] [location] vegan`
+
+This is critical. The general "best restaurants" searches surface the most
+popular/reviewed places, which often aren't the most veg-friendly. The
+veg-signal search catches hidden gems — a dedicated hotpot restaurant with
+a vegetarian combo, an Italian place with a separate veg menu, a Thai spot
+that makes everything without fish sauce on request. These places are
+frequently the best answer for the user but would be invisible without this
+search. Merge veg-signal results into the main candidate list.
+
+**Ranking candidates — rating quality over review volume:**
+When you have 8–12 candidates and need to trim, don't drop restaurants just
+because they have fewer reviews. A 4.8⭐ restaurant with 500 reviews is a
+stronger signal than a 4.2⭐ with 2,000 reviews. High ratings with moderate
+review counts often indicate newer, more intentional restaurants — exactly
+the kind that tend to have thoughtful veg options.
+
+**Cuisine-aware discovery:** Some cuisines have subtypes that are
+structurally more veg-friendly. When searching within a specific cuisine,
+search for the veg-favorable subtype separately:
+- **Hotpot** — dedicated hotpot > BBQ+hotpot combos (individual pots =
+  no cross-contamination, menus built around broth/veg/tofu selection)
+- **Indian** — South Indian / pure veg > North Indian (more inherently
+  vegetarian dishes)
+- **Japanese** — Izakaya or veg-forward > sushi-only (more cooked veg
+  options)
+- **Italian** — Pasta-focused > seafood-focused (more natural veg mains)
+- **Mexican** — Regional Mexican > Tex-Mex chains (more bean/cheese/
+  vegetable traditions)
+
 From results, extract for each restaurant: name, cuisine type, rating, price
 range, address. Deduplicate by name. Discard fast food chains (unless
 requested). Keep 8–12 candidates, then trim after menu analysis.
@@ -133,6 +167,16 @@ Factors that bump the score up:
 - Menu uses (V)/(VG) labels showing awareness
 - Reviews mention veg accommodations positively
 - Substantial mains, not just "salad and fries"
+
+**Automatic 5/5 — "veg paradise" signals (any one = top score):**
+- Dedicated vegetarian combo/set meal on the menu
+- Labeled vegan/vegetarian soup bases, broths, or sauces
+- Full separate vegetarian menu
+- Individual cooking vessels (hotpot, fondue) for no cross-contamination
+
+These indicate the kitchen designed for vegetarians, not just tolerates
+them. A restaurant with 8 items and a dedicated veg combo beats one with
+15 items that are all "sides you can technically eat."
 
 Factors that drop the score:
 - Only sides and salads qualify
