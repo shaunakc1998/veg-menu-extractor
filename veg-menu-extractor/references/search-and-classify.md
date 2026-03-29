@@ -52,13 +52,21 @@ best fine dining [location]
 best mid-range restaurants [location]
 ```
 
-### Veg-signal searches (always run 1–2 of these)
+### Veg-specialist sweep (MANDATORY — do not skip)
 
-These catch restaurants that are intentionally veg-friendly but don't top
-the general "best of" lists. This is one of the most important search
-steps — skipping it is how you miss hidden gems like a dedicated hotpot
-spot with a vegetarian combo or a Thai restaurant that cooks without fish
-sauce.
+This is the single most important search step for finding the best
+restaurant for a vegetarian user. In real-world testing, the best
+restaurant was missed TWICE because this step was skipped or run too
+narrowly. Both times the user had to manually ask about the restaurant
+that should have been found first.
+
+**Why it keeps failing:** General "best [cuisine] in [location]" searches
+surface the most popular/reviewed places. Veg-specialist restaurants are
+smaller, newer, and often in adjacent neighborhoods. They get drowned out
+by mainstream places with more reviews. The only way to find them is to
+search specifically for veg-friendliness.
+
+**Step 2a — Veg-signal searches (same location, at least 2):**
 
 ```
 vegetarian friendly [cuisine] [location]
@@ -75,6 +83,41 @@ best restaurants vegetarian options [location]
 vegan friendly dining [location]
 ```
 
+**Step 2b — Expanded radius search (REQUIRED, at least 1):**
+
+Veg-specialist restaurants are rarer than mainstream ones. The best option
+for a vegetarian is often 10–15 minutes away in an adjacent city or
+neighborhood. Always expand the search area for veg-signal queries:
+
+| User says | Also search |
+|---|---|
+| A city (e.g., "San Jose") | The metro area: "South Bay," "Sunnyvale," "Santa Clara" |
+| A neighborhood (e.g., "West Village") | The city: "Manhattan," "NYC" |
+| A metro area (e.g., "Bay Area") | Already broad — use as-is |
+| A small town | The nearest city or county |
+
+Expanded radius queries:
+```
+vegetarian [cuisine] [broader area]
+vegan [cuisine] near [location]
+best vegetarian [cuisine] [metro area]
+[cuisine] vegetarian [adjacent city 1]
+[cuisine] vegetarian [adjacent city 2]
+```
+
+**If a veg-specialist is found outside the stated area**, include it with
+a distance note: "⚠️ Located in [City], ~15 min from [user's area] — worth
+the drive for the best veg options in the region."
+
+**Real failures this prevents:**
+- Mumu Hot Pot (Emeryville) missed when user searched "Bay Area hotpot" —
+  drowned out by louder BBQ+hotpot combos
+- Oh Baby Sushi (Sunnyvale) missed when user searched "Japanese San Jose
+  Milpitas" — in adjacent city, invisible to location-specific searches
+
+Both were the #1 best restaurant for the vegetarian user. Both were only
+found when the user manually asked. This sweep prevents that.
+
 ### Cuisine-aware subtype searches
 
 Some cuisines have subtypes that are structurally more veg-friendly. When
@@ -85,7 +128,7 @@ too — don't just search for the umbrella term.
 |---|---|---|---|
 | Hotpot / Korean | Dedicated hotpot (not BBQ+hotpot) | Individual pots, menus built around broth/veg/tofu, no meat cross-contamination | `hotpot [location]` (not just "korean bbq hotpot") |
 | Indian | South Indian, "pure veg" | More inherently vegetarian dishes | `south indian [location]`, `pure veg [location]` |
-| Japanese | Izakaya, Buddhist/shojin | More cooked veg options, veg tasting menus | `izakaya [location]`, `japanese vegetarian [location]` |
+| Japanese | Izakaya, Buddhist/shojin, veg sushi | More cooked veg options, some specialize in veg rolls | `japanese vegetarian [location]`, `vegan sushi [location]` |
 | Italian | Pasta-focused, Roman | Cacio e pepe, carciofi, more veg-first dishes | `pasta restaurant [location]` |
 | Mexican | Regional Mexican, Oaxacan | Bean/cheese/mole traditions, less meat-centric | `mexican vegetarian [location]` |
 | Thai | Thai with veg options | Some cook without fish sauce on request | `thai vegetarian [location]` |
@@ -106,6 +149,11 @@ options. Don't drop them just because they're less "famous."
 2. Star rating — tiebreaker between equal veg scores
 3. Review count — only use to break ties between equal ratings
 4. Cuisine diversity — prefer a mix over 5 restaurants of the same type
+
+**Never drop a veg-specialist restaurant during trimming.** If a restaurant
+has a dedicated veg menu, labeled veg items, or a veg combo — it stays in
+the final list regardless of review count or how well-known it is. These
+are the most valuable results for the user.
 
 ### When results are thin
 

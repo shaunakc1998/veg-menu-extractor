@@ -128,19 +128,41 @@ Run **3–5 varied `web_search` queries** to get diverse results. See
 Japanese, American, Mediterranean, fusion, everything. Don't bias toward
 "vegetarian-friendly" places. A steakhouse with great sides is fair game.
 
-**Then run 1–2 "veg-signal" searches** to catch restaurants that are
-intentionally veg-friendly but don't dominate the "best of" lists:
+**Then run a mandatory "veg-specialist sweep"** — this is NOT optional. Run
+at least 2 searches specifically designed to surface restaurants that are
+intentionally veg-friendly. These are frequently the BEST answer for the
+user but are invisible to general "best restaurants" searches.
+
+**Step 2a — Veg-signal searches (same location):**
 - `vegetarian friendly [cuisine] [location]`
 - `[cuisine] [location] vegetarian options`
-- `[cuisine] [location] vegan`
+- `best vegan [cuisine] [location]`
 
-This is critical. The general "best restaurants" searches surface the most
-popular/reviewed places, which often aren't the most veg-friendly. The
-veg-signal search catches hidden gems — a dedicated hotpot restaurant with
-a vegetarian combo, an Italian place with a separate veg menu, a Thai spot
-that makes everything without fish sauce on request. These places are
-frequently the best answer for the user but would be invisible without this
-search. Merge veg-signal results into the main candidate list.
+**Step 2b — Expanded radius search (REQUIRED):**
+Veg-specialist restaurants are rarer than mainstream ones. The best option
+for a vegetarian is often in an adjacent neighborhood or city — 10–15
+minutes away. Always run at least 1 search with a broader location:
+- If user says a city → search the metro area: "San Jose" → also search
+  "South Bay," "Sunnyvale," "Santa Clara," "Milpitas"
+- If user says a neighborhood → search the city: "West Village" → also
+  search "Manhattan," "NYC"
+- If user says a metro area → search it as-is: "Bay Area" is already broad
+
+Expanded radius queries:
+- `vegetarian [cuisine] [broader area]`
+- `vegan [cuisine] near [location]`
+- `best vegetarian [cuisine] [metro area]`
+
+**Why this matters:** In real-world testing, the single best restaurant for
+vegetarians was missed TWICE because it was in an adjacent city (15 min
+away) or drowned out by louder mainstream places. The veg-specialist sweep
+with expanded radius is what prevents this. If a veg-specialist place is
+found outside the user's stated area, include it with a distance note:
+"⚠️ [Restaurant] is in [City], ~15 min from [user's area] — worth the
+drive for the best veg options."
+
+Merge all veg-signal and expanded-radius results into the main candidate
+list before ranking.
 
 **Ranking candidates — rating quality over review volume:**
 When you have 8–12 candidates and need to trim, don't drop restaurants just
