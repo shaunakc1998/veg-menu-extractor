@@ -66,6 +66,21 @@ After the initial results, you can ask:
 ### 🍳 Prix fixe / tasting menu support
 Fine dining restaurants get a course-by-course breakdown instead of being forced into Starters/Mains/Sides. Includes a tip to call ahead for vegetarian tasting menu accommodations.
 
+### 🍲 AYCE & build-your-own support
+Hotpot, Korean BBQ, poke bowls, dim sum, and buffet restaurants get their own template organized by component type — soup bases, vegetables, tofu & soy, mushrooms, noodles, sauces — instead of being forced into categories that don't fit.
+
+### 🍖 "For your non-veg friends"
+Every restaurant includes 1–2 standout meat/fish dishes from reviews so you can pitch the spot to your whole group. Because the real use case is *mixed* dining — both the vegetarian and the steak lover need to leave happy.
+
+### ⚠️ Allergen stacking
+Handles "vegetarian + gluten-free", "vegan + nut allergy", and other combos. Applies both filters, flags conflicts, and gives combined server scripts like: *"I'm vegetarian and gluten-free — could you check if the pad thai uses soy sauce or wheat noodles?"*
+
+### 🕐 Hours & open-now awareness
+Includes restaurant hours, flags places closed on the user's day, and notes typical wait times from reviews. Won't send you to a restaurant that's closed on Mondays.
+
+### 🔎 Smart restaurant discovery
+Runs "veg-signal" searches alongside general searches to catch intentionally veg-friendly places that don't top the "best of" lists. Prioritizes star rating over review volume (a 4.8⭐ with 500 reviews beats a 4.2⭐ with 2,000). Uses cuisine-aware search — for hotpot, searches for dedicated hotpot separately from BBQ+hotpot combos.
+
 ---
 
 ## Installation
@@ -85,23 +100,26 @@ Fine dining restaurants get a course-by-course breakdown instead of being forced
 
 ```
 veg-menu-extractor/
-├── SKILL.md                           # Main playbook (317 lines)
+├── SKILL.md                           # Main playbook (460 lines)
 │   ├── Workflow (6 steps)
-│   ├── Output templates (à la carte + prix fixe)
+│   ├── Output templates (à la carte + prix fixe + AYCE)
+│   ├── Dietary profiles + allergen stacking
+│   ├── Veg-signal & cuisine-aware discovery
 │   ├── 12 rules
 │   ├── Edge case handling
 │   └── Follow-up handling
 └── references/
-    └── search-and-classify.md         # Deep reference (426 lines)
-        ├── Search query templates
-        ├── Menu crawling source priority
+    └── search-and-classify.md         # Deep reference (590 lines)
+        ├── Search query templates (broad + veg-signal + cuisine-aware)
+        ├── Menu crawling source priority (with image-menu fallback)
         ├── Classification rules (5 categories)
-        ├── Dietary profile adjustments (6 profiles)
+        ├── Dietary profile adjustments (6 profiles + allergen combos)
         ├── Hidden ingredient glossary (30+ terms)
         ├── Hero dish identification guide
         ├── Server script templates
-        ├── Scoring system
-        └── Failure mode handling
+        ├── Scoring system (with automatic 5/5 signals)
+        ├── Failure mode handling
+        └── Hours and practical logistics
 ```
 
 ---
@@ -120,8 +138,14 @@ veg-menu-extractor/
 **Single restaurant:**
 > "What vegetarian options does Canlis in Seattle have?"
 
+**Hotpot / AYCE:**
+> "Best hotpot in the Bay Area for a vegetarian? I'm going with friends who eat meat."
+
+**Allergen stacking:**
+> "I'm vegetarian and gluten-free. Find dinner options near me in Brooklyn."
+
 **Comparison:**
-> "Compare L'Artusi vs Via Carota vs Rosemary's for a vegetarian dining in West Village NYC."
+> "Compare L'Artusi vs Via Carota vs Rosemary's for vegetarian dining in West Village NYC."
 
 **Follow-up:**
 > "Actually I'm vegan — re-filter those results."
@@ -130,12 +154,12 @@ veg-menu-extractor/
 
 ## How it works
 
-1. **Discover** — Runs 3–5 web searches for top-rated restaurants (any cuisine, not biased toward veg)
-2. **Crawl** — Fetches actual menus from restaurant websites, Yelp, or delivery platforms
-3. **Classify** — Applies vegetarian classification rules with a 30-term hidden ingredient glossary
-4. **Score** — Rates each restaurant 1–5 for veg-friendliness
-5. **Highlight** — Identifies hero dishes from reviews and menu descriptions
-6. **Present** — Quick-scan table → detailed breakdowns → server scripts → bottom-line recommendation
+1. **Discover** — Runs 3–5 broad searches + 1–2 "veg-signal" searches to catch intentionally veg-friendly places that don't top the general lists
+2. **Crawl** — Fetches actual menus from restaurant websites, delivery platforms (DoorDash/UberEats for image-based menus), or Yelp
+3. **Classify** — Applies vegetarian classification rules with a 30-term hidden ingredient glossary, filtered through the user's dietary profile + any allergens
+4. **Score** — Rates each restaurant 1–5 for veg-friendliness, with automatic 5/5 for places with dedicated veg combos or labeled veg broths
+5. **Highlight** — Identifies hero dishes from reviews + standout non-veg dishes for the rest of the group
+6. **Present** — Quick-scan table → detailed breakdowns (3 templates: à la carte, prix fixe, AYCE) → server scripts → hours → bottom-line recommendation
 
 ---
 
